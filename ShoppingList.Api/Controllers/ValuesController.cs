@@ -3,43 +3,158 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ShoppingList.Api.Data;
+using ShoppingList.Api.Entities;
 
 namespace ShoppingList.Api.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ValuesController : ControllerBase
-    {
-        // GET api/values
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+{       [Route("api/[controller]")]
+        [ApiController]
+        public class ShoppingListsController : ControllerBase
         {
-            return new string[] { "value1", "value2" };
-        }
+            private readonly ShoppingListDbContext db;
+            
+            public ShoppingListsController(ShoppingListDbContext db)
+            {
+                this.db = db;
+            }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
+            // GET api/values
+            [HttpGet]
+            public async Task<IActionResult> Get()
+            {
+                return Ok(await db.ShoppingLists.ToListAsync());
+            }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+            // GET api/values/5
+            [HttpGet("{id}", Name = "GetShoppingList")]
+            public async Task<IActionResult> Get(int id)
+            {
+                var list = await db.ShoppingLists.Include(l => l.Items).SingleOrDefaultAsync(i => i.Id == id);
+                if (list == null)
+                {
+                    return NotFound();
+                }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+                return Ok(list);
+            }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            // POST api/values
+            [HttpPost]
+            public async Task<IActionResult> Post([FromBody] Entities.ShoppingList value)
+            {
+                if (value == null) return BadRequest();
+
+                await db.ShoppingLists.AddAsync(value);
+                await db.SaveChangesAsync();
+            
+                return CreatedAtRoute("GetShoppingList", new { id = value.Id }, value);
+
+            }
+
+            // PUT api/values/5
+            [HttpPut("{id}")]
+            public async Task<IActionResult> Put(int id, [FromBody] Entities.ShoppingList value)
+            {
+                if (value == null || value.Id != id)
+                    return BadRequest();
+
+                var list = await db.ShoppingLists.Include(l => l.Items).SingleOrDefaultAsync(i => i.Id == id);
+                if (list == null)
+                {
+                    return NotFound();
+                }
+
+                list.Name = value.Name;
+                list.Items = value.Items;
+
+                try
+                {
+                    db.ShoppingLists.Update(list);
+                    db.SaveChanges();
+                }
+                catch (Exception e)
+                {
+
+                }
+
+                return NoContent();
+            }
+
+            // DELETE api/values/5
+            [HttpDelete("{id}")]
+            public async Task<IActionResult> Delete(int id)
+            {
+                var list = await db.ShoppingLists.FindAsync(id);
+
+                if (list == null)
+                {
+                    return NotFound();
+                }
+
+                db.ShoppingLists.Remove(list);
+                await db.SaveChangesAsync();
+
+                return NoContent();
+            }
+
+
+            [HttpGet("{shoppingListId}/Items/{id}", Name = "ShoppingListItem")]
+            public async Task<IActionResult> GetItem(int shoppingListId, int id)
+            {
+                var list = await db.ShoppingLists.Include(l => l.Items).SingleOrDefaultAsync(l => l.Id == shoppingListId);
+
+                if (list == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(list.Items.SingleOrDefault(i => i.Id == id));
+            }
+
+            [HttpPost("{shoppingListId}/Items")]
+            public async Task<IActionResult> PostItem(int shoppingListId, [FromBody] ShoppingListItem item)
+            {
+                var list = await db.ShoppingLists.Include(l => l.Items).SingleOrDefaultAsync(l => l.Id == shoppingListId);
+
+                if (list == null)
+                {
+                    return NotFound();
+                }
+
+                if (list.Items == null)
+                {
+                    list.Items = new List<ShoppingListItem>();
+                }
+
+                list.Items.Add(item);
+                await db.SaveChangesAsync();
+
+                return CreatedAtRoute("ShoppingListItem", new { shoppingListId, item.Id }, item);
+            }
+
+            [HttpPut("{shoppingListId}/Items/{id}")]
+            public async Task<IActionResult> PutItem(int shoppingListId, int id, [FromBody] ShoppingListItem item)
+            {
+                var list = await db.ShoppingLists.Include(l => l.Items).SingleOrDefaultAsync(l => l.Id == shoppingListId);
+
+                if (list == null)
+                {
+                    return NotFound();
+                }
+
+                var original = list.Items.SingleOrDefault(i => i.Id == id);
+
+                if (original == null)
+                {
+                    return NotFound();
+                }
+
+                original.Name = item.Name;
+                original.Purchased = item.Purchased;
+                await db.SaveChangesAsync();
+
+                return NoContent();
+            }
         }
     }
-}
