@@ -1,0 +1,7 @@
+<mat-selection-list (selectionChange)="onSelectionChanged($event, ShoppingList)">
+  <mat-list-option *ngFor="let item of ShoppingList.items" [selected]="item.purchased" [value]="item.id">{{item.name}}</mat-list-option>
+</mat-selection-list>
+<form #itemsForm="ngForm" (ngSubmit)="addItem(newItem)" *ngIf="ShoppingList.id">
+  <input mat-input [(ngModel)]="newItem.name" name="name">
+  <button mat-raised-button type="submit"><mat-icon>add</mat-icon></button>
+</form>

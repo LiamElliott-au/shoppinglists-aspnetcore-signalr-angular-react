@@ -1,0 +1,18 @@
+<mat-card *ngIf="(list$ | async) as list; else loading">
+  <mat-card-title>
+    <div *ngIf="!editingModel; else nameEditForm">{{list.name ? list.name : 'new list'}} <mat-icon (click)="editingModel = list">edit</mat-icon></div>
+  </mat-card-title>
+  <mat-card-content>
+   <app-list-items [ShoppingList]="list" (AddItem)="onAddItem($event.item, $event.shoppingList)" (UpdateItem)="onUpdateItem($event.item, $event.shoppingList)"></app-list-items>
+  </mat-card-content>
+</mat-card>
+<ng-template #loading>
+  LOADING...
+</ng-template>
+
+<ng-template #nameEditForm>
+  <form #nameForm="ngForm" (ngSubmit)="onSaveList(editingModel); editingModel = null;">
+    <input mat-input [(ngModel)]="editingModel.name" name="name">
+    <button mat-raised-button type="submit"><mat-icon>save</mat-icon></button>
+  </form>
+</ng-template>

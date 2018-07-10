@@ -1,0 +1,22 @@
+<!--The content below is only a placeholder and can be replaced.-->
+<div style="text-align:center">
+  <h1>
+    Welcome to {{ title }}!
+  </h1>
+</div>
+<div fxLayout="row" fxLayoutAlign="space-between">
+<mat-card fxFlex="25" style="margin-right: 5rem">
+  <mat-card-title>
+    <div fxLayout="row" fxLayoutAlign="space-between">
+      <span>Shopping lists</span><button  mat-icon-button [routerLink]="['shoppingList', 'new']"><mat-icon>add</mat-icon></button>
+    </div>
+  </mat-card-title>
+  <mat-card-content>
+
+    <app-list-container [Lists]="lists$ | async" (InvalidateList)="refresh$.next()"></app-list-container>
+  </mat-card-content>
+</mat-card>
+<div fxFlex="fill">
+<router-outlet ></router-outlet>
+</div>
+</div>
