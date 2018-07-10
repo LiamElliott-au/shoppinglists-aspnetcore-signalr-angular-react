@@ -20,12 +20,12 @@ class App extends Component {
 
   addList(){
     this.setState({
-      selectedList: { name: "sasdf"}
+      selectedList: { name: "New Shopping List"}
     })
   }
 
   selectList(list){
-    var  _this = this;
+    const  _this = this;
     axios.get('http://localhost:1811/api/shoppingLists/' + list.id)
     .then(function(response) {
       _this.setState(
@@ -37,8 +37,8 @@ class App extends Component {
   }
 
   saveListName(name){
-    var _this = this;
-    var list = this.state.selectedList;
+    const _this = this;
+    const list = this.state.selectedList;
     list.name= name;
     if (list.id >= 0){
       axios.put('http://localhost:1811/api/shoppingLists/' + list.id, list)
@@ -52,12 +52,40 @@ class App extends Component {
       .then(function(response) {
         _this.refreshLists();
       });
-    }
-    
+    }    
+  }
+
+  addItem(item){
+    const _this = this;
+    const list = this.state.selectedList;
+    const itemToAdd = {name: item, purchased: false};
+
+    axios.post('http://localhost:1811/api/shoppingLists/'+ list.id+ '/Items', itemToAdd)
+    .then(function(response) {
+      list.items.push(response.data);
+      _this.setState({
+        selectedList: list
+      });
+    });
   }
   
+  saveItem(item){
+    const _this = this;
+    const list = this.state.selectedList;
+    axios.put('http://localhost:1811/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item)
+    .then(function(response){
+      const list =  _this.state.selectedList;      
+      const index = list.items.findIndex(i => i.id === item.id);
+      list.items.splice(index, 1, item);
+      _this.setState({
+        selectedList: list
+      });
+    });
+    
+  }
+
   refreshLists(){
-    var  _this = this;
+    const  _this = this;
       axios.get('http://localhost:1811/api/shoppingLists')
           .then(function(response) {
             _this.setState(
@@ -87,8 +115,12 @@ class App extends Component {
           </Col>
           <Col md={8}>
           { this.state.selectedList && 
-            <ListContainer name={this.state.selectedList.name} items={this.state.selectedList.items}
-            updateName={(name) => this.saveListName(name)}></ListContainer>
+            <ListContainer 
+              name={this.state.selectedList.name} 
+              items={this.state.selectedList.items}
+              updateName={(name) => this.saveListName(name)} 
+              addItem={(item) => this.addItem(item)}
+              updateItem={(item) => this.saveItem(item)}></ListContainer>
           }
           </Col>
           </Row>

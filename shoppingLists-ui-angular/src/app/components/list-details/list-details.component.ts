@@ -43,11 +43,11 @@ export class ListDetailsComponent implements OnInit {
       shoppingList.items = [];
     }
     shoppingList.items.push(item);
-    this.service.addItem(item, shoppingList.id);
+    this.service.addItem(item, shoppingList.id).subscribe(()=>console.log("item added"));
   }
 
   onUpdateItem(item: ShoppingListItem, shoppingList: ShoppingList){
-    this.service.updateItem(item, shoppingList.id);
+    this.service.updateItem(item, shoppingList.id).subscribe(()=>console.log("item updated"));
   }
 
   onSaveList(list: ShoppingList){

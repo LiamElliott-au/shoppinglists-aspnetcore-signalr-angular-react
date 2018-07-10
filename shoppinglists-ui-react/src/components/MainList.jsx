@@ -3,13 +3,13 @@ import {Grid, Row, Col} from 'react-bootstrap';
 
 class MainList extends React.Component {
   renderItem(item){
-     return <li onClick={() => this.props.selectList(item)}>{item.name}</li>;
+     return <li key={item.id} onClick={() => this.props.selectList(item)}>{item.name}</li>;
     }   
   
   render() {
       return <div >
         
-        <Row className="show-grid"> 
+        <Row className="show-grid" style={{display: 'flex', alignItems: 'center'}} > 
           <Col md={8}><h2>Shopping Lists</h2></Col>
           <Col md={3}><button onClick={() => this.props.addList()}>+</button></Col>
         </Row>
