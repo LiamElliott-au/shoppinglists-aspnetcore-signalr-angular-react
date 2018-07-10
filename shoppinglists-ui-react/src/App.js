@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-
+import {Grid, Row, Col} from 'react-bootstrap';
 import logo from './logo.svg';
 import './App.css';
 import ListContainer from './components/ListContainer';
-import ListDetails from './components/ListDetails';
+import MainList from './components/MainList';
 
 class App extends Component {
-
+  
   constructor(props){
     super(props);
 
@@ -16,6 +16,12 @@ class App extends Component {
       selectedList: null,
       hubConnection: null,
     }
+  }
+
+  addList(){
+    this.setState({
+      selectedList: { name: "sasdf"}
+    })
   }
 
   selectList(list){
@@ -28,6 +34,26 @@ class App extends Component {
         }
       );
     });
+  }
+
+  saveListName(name){
+    var _this = this;
+    var list = this.state.selectedList;
+    list.name= name;
+    if (list.id >= 0){
+      axios.put('http://localhost:1811/api/shoppingLists/' + list.id, list)
+      .then(function(response) {
+        _this.refreshLists();
+        
+      });
+    }
+    else{
+      axios.post('http://localhost:1811/api/shoppingLists', list)
+      .then(function(response) {
+        _this.refreshLists();
+      });
+    }
+    
   }
   
   refreshLists(){
@@ -54,14 +80,24 @@ class App extends Component {
           <h1 className="App-title">Welcome to React</h1>
         </header>
         <div className="App-intro">
-          <ListContainer className="col-3" lists={this.state.allLists} selectList={(list)=> this.selectList(list)}></ListContainer>
+        <Grid>
+          <Row className="show-grid">
+            <Col md={3} >
+                <MainList lists={this.state.allLists} selectList={(list)=> this.selectList(list)} addList={()=> this.addList()}></MainList>
+          </Col>
+          <Col md={8}>
           { this.state.selectedList && 
-          <ListDetails name={this.state.selectedList.name} items={this.state.selectedList.items}></ListDetails>
+            <ListContainer name={this.state.selectedList.name} items={this.state.selectedList.items}
+            updateName={(name) => this.saveListName(name)}></ListContainer>
           }
+          </Col>
+          </Row>
+          </Grid>
         </div>
       </div>
     );
   }
+
 }
 
 export default App;
