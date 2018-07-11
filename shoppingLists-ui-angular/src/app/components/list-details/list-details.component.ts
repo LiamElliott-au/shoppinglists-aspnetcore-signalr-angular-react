@@ -41,7 +41,12 @@ export class ListDetailsComponent implements OnInit {
       )
     );
 
-    this.list$ = merge(param$, this.signalR.shoppingListUpdated);
+    const itemRefresh$ = merge(this.signalR.shoppingListItemAdded, this.signalR.shoppingListItemUpdated).pipe(
+      switchMap(()=> this.service.get(this.currentId))
+    );
+
+    this.list$ = merge(param$, this.signalR.shoppingListUpdated, itemRefresh$);
+
   }
 
   onAddItem(item: ShoppingListItem, shoppingList: ShoppingList){

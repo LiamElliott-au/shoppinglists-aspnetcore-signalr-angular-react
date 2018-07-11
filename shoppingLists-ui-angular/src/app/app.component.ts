@@ -21,10 +21,14 @@ export class AppComponent {
   }
 
   ngOnInit(){
+    
+    this.signalRService.connect();
+    
     var refresh$ = this.signalRService.shoppingListsRefresh.pipe(
       switchMap(_ => this.service.getAll())
     )
 
     this.lists$ = merge(this.service.getAll(), refresh$);
+
   }
 }

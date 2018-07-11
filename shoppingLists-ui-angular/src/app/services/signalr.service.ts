@@ -9,6 +9,8 @@ import { ShoppingList, ShoppingListItem } from '../models/shoppingList';
 export class SignalRService {
 
   private _hubConnection: HubConnection;
+      isConnected: boolean = false;
+
 
     shoppingListsRefresh = new Subject();
     shoppingListItemAdded = new Subject<ShoppingListItem>();
@@ -21,8 +23,9 @@ export class SignalRService {
    }
 
   private init() {
+
     this._hubConnection = new HubConnectionBuilder()
-    .withUrl("http://localhost:15777/shoppingListHub")
+    .withUrl("http://localhost:18111/hubs/shoppingLists")
     .build();
 
     this._hubConnection.on('ShoppingListItem_Added', (item: ShoppingListItem) => {
@@ -47,6 +50,7 @@ export class SignalRService {
      });
 
     this._hubConnection.onclose(e=> {
+        this.isConnected = false;
         if (e){
             console.log('Hub connection closed due to the following error' + e.name);
             console.log(e.message);
@@ -62,9 +66,11 @@ export class SignalRService {
     
     this._hubConnection.start()
     .then(() => {
+        this.isConnected = true;
         console.log('Hub connection started');
     })
     .catch(err => {
+        this.isConnected = false;
         console.log('Error while establishing connection')
     });
 
