@@ -12,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ShoppingList.Api.Data;
+using ShoppingList.Api.SignalR;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace ShoppingList.Api
 {
@@ -30,6 +32,12 @@ namespace ShoppingList.Api
             services.AddDbContext<ShoppingListDbContext>(options =>
             options.UseInMemoryDatabase("ShoppingLists"));
 
+            services.AddSignalR();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info { Title = "ShoppingLists API", Version = "v1" });
+            });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
@@ -44,14 +52,24 @@ namespace ShoppingList.Api
             {
                 app.UseHsts();
             }
+            
+            app.UseSignalR(route =>
+            {
+                route.MapHub<ShoppingListHub>("/hubs/shoppingLists");
+            });
 
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "ShoppingLists V1");
+            });
             app.UseCors(options =>
-            options
-                .AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-            );
+           options
+               .AllowAnyOrigin()
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials()
+           );
             app.UseHttpsRedirection();
             app.UseMvc();
         }
