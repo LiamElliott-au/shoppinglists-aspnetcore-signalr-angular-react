@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShoppingList.Api.Data;
 using ShoppingList.Api.Entities;
+using ShoppingList.Api.Services;
 
 namespace ShoppingList.Api.Controllers
 {
@@ -14,10 +15,12 @@ namespace ShoppingList.Api.Controllers
     public class ShoppingListsController : ControllerBase
     {
         private readonly ShoppingListDbContext db;
+        private readonly IShoppingListNotificationService notifications;
 
-        public ShoppingListsController(ShoppingListDbContext db)
+        public ShoppingListsController(ShoppingListDbContext db, IShoppingListNotificationService notifications)
         {
             this.db = db;
+            this.notifications = notifications;
         }
 
         // GET api/values
@@ -50,6 +53,7 @@ namespace ShoppingList.Api.Controllers
             await db.ShoppingLists.AddAsync(value);
             await db.SaveChangesAsync();
 
+            await notifications.NotifyRefreshList();
             return CreatedAtRoute("GetShoppingList", new { id = value.Id }, value);
 
         }
@@ -80,6 +84,7 @@ namespace ShoppingList.Api.Controllers
 
             }
 
+            await notifications.NotifyRefreshList();
             return NoContent();
         }
 
@@ -97,6 +102,7 @@ namespace ShoppingList.Api.Controllers
             db.ShoppingLists.Remove(list);
             await db.SaveChangesAsync();
 
+            await notifications.NotifyRefreshList();
             return NoContent();
         }
 
@@ -132,6 +138,7 @@ namespace ShoppingList.Api.Controllers
             list.Items.Add(item);
             await db.SaveChangesAsync();
 
+            await notifications.NotifyShoppingListItemAdded(shoppingListId, item);
             return CreatedAtRoute("ShoppingListItem", new { shoppingListId, item.Id }, item);
         }
 
@@ -156,6 +163,8 @@ namespace ShoppingList.Api.Controllers
             original.Purchased = item.Purchased;
             await db.SaveChangesAsync();
 
+
+            await notifications.NotifyShoppingListItemUpdated(shoppingListId, item);
             return NoContent();
         }
     }
