@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ShoppingList.Api.Data;
+using ShoppingList.Api.Services;
 using ShoppingList.Api.SignalR;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -34,6 +35,7 @@ namespace ShoppingList.Api
 
             services.AddSignalR();
 
+            services.AddTransient<IShoppingListNotificationService, ShoppingListNotificationService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "ShoppingLists API", Version = "v1" });
