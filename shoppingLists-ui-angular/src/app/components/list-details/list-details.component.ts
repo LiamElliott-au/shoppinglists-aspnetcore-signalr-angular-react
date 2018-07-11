@@ -3,8 +3,9 @@ import { Observable } from 'rxjs/internal/Observable';
 import { ShoppingList, ShoppingListItem } from '../../models/shoppingList';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ShoppingListService } from '../../services/shopping-List.service';
-import { pluck, switchMap } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { pluck, switchMap, tap } from 'rxjs/operators';
+import { of, merge } from 'rxjs';
+import { SignalRService } from '../../services/signalr.service';
 
 @Component({
   selector: 'app-list-details',
@@ -22,11 +23,14 @@ export class ListDetailsComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, 
     private router: Router,
-    private service: ShoppingListService ) { }
+    private service: ShoppingListService,
+    private signalR: SignalRService ) { }
 
   ngOnInit() {
-    this.list$ = this.route.params.pipe(
+    const param$ = this.route.params.pipe(
       pluck('id'),
+      tap(id => {if (this.currentId) this.signalR.leaveShoppingList(this.currentId)}),
+      tap(id => {this.signalR.joinShoppingList(+id); this.currentId = +id}),
       switchMap(id =>
         {
           if (id === 'new')
@@ -36,6 +40,8 @@ export class ListDetailsComponent implements OnInit {
         }
       )
     );
+
+    this.list$ = merge(param$, this.signalR.shoppingListUpdated);
   }
 
   onAddItem(item: ShoppingListItem, shoppingList: ShoppingList){

@@ -3,6 +3,7 @@ import { Observable, Subject, merge } from 'rxjs';
 import { ShoppingList } from './models/shoppingList';
 import { ShoppingListService } from './services/shopping-List.service';
 import { switchMap } from 'rxjs/operators';
+import { SignalRService } from './services/signalr.service';
 
 @Component({
   selector: 'app-root',
@@ -15,11 +16,15 @@ export class AppComponent {
   lists$: Observable<ShoppingList>;
   refresh$ = new Subject<any>();
 
-  constructor(private service: ShoppingListService) {
+  constructor(private service: ShoppingListService, private signalRService: SignalRService) {
 
   }
 
   ngOnInit(){
-    this.lists$ = this.service.getAll();
+    var refresh$ = this.signalRService.shoppingListsRefresh.pipe(
+      switchMap(_ => this.service.getAll())
+    )
+
+    this.lists$ = merge(this.service.getAll(), refresh$);
   }
 }
