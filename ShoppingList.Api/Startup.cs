@@ -55,10 +55,7 @@ namespace ShoppingList.Api
                 app.UseHsts();
             }
             
-            app.UseSignalR(route =>
-            {
-                route.MapHub<ShoppingListHub>("/hubs/shoppingLists");
-            });
+           
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -74,6 +71,11 @@ namespace ShoppingList.Api
            );
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseSignalR(route =>
+            {
+                route.MapHub<ShoppingListHub>("/hubs/shoppingLists");
+            });
         }
     }
 }
