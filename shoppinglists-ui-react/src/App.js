@@ -26,7 +26,7 @@ class App extends Component {
 
   selectList(list){
     const  _this = this;
-    axios.get('http://localhost:1811/api/shoppingLists/' + list.id)
+    axios.get('http://localhost:18111/api/shoppingLists/' + list.id)
     .then(function(response) {
       _this.setState(
         {
@@ -41,14 +41,14 @@ class App extends Component {
     const list = this.state.selectedList;
     list.name= name;
     if (list.id >= 0){
-      axios.put('http://localhost:1811/api/shoppingLists/' + list.id, list)
+      axios.put('http://localhost:18111/api/shoppingLists/' + list.id, list)
       .then(function(response) {
         _this.refreshLists();
         
       });
     }
     else{
-      axios.post('http://localhost:1811/api/shoppingLists', list)
+      axios.post('http://localhost:18111/api/shoppingLists', list)
       .then(function(response) {
         _this.refreshLists();
       });
@@ -60,7 +60,7 @@ class App extends Component {
     const list = this.state.selectedList;
     const itemToAdd = {name: item, purchased: false};
 
-    axios.post('http://localhost:1811/api/shoppingLists/'+ list.id+ '/Items', itemToAdd)
+    axios.post('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items', itemToAdd)
     .then(function(response) {
       list.items.push(response.data);
       _this.setState({
@@ -72,7 +72,7 @@ class App extends Component {
   saveItem(item){
     const _this = this;
     const list = this.state.selectedList;
-    axios.put('http://localhost:1811/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item)
+    axios.put('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item)
     .then(function(response){
       const list =  _this.state.selectedList;      
       const index = list.items.findIndex(i => i.id === item.id);
@@ -86,7 +86,7 @@ class App extends Component {
 
   refreshLists(){
     const  _this = this;
-      axios.get('http://localhost:1811/api/shoppingLists')
+      axios.get('http://localhost:18111/api/shoppingLists')
           .then(function(response) {
             _this.setState(
               {
