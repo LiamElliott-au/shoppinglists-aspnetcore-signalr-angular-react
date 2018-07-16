@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { HubConnectionBuilder } from '@aspnet/signalr';
 import axios from 'axios';
 import {Grid, Row, Col} from 'react-bootstrap';
 import logo from './logo.svg';
@@ -97,6 +98,21 @@ class App extends Component {
   }
   
   componentDidMount(){
+
+    const hubConnection = new HubConnectionBuilder()
+    .withUrl("http://localhost:18111/hubs/shoppingLists")
+    .build();
+
+    this.setState({hubConnection }, () => {
+      this.state.hubConnection.start()
+      .then(() => console.log("Connected"))
+      .catch(e => console.log("Error connecting"));
+      
+      this.state.hubConnection.on('ShoppingLists_Refresh', () => {
+        this.refreshLists();
+      });
+    });
+  
     this.refreshLists();
   }
 
