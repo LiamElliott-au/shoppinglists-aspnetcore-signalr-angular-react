@@ -26,3 +26,14 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+li {
+ list-style-type: none;
+}
+
+form {
+  display: flex;
+}
+.checkbox {
+  text-align: left;
+}

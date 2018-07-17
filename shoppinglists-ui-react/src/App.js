@@ -153,10 +153,10 @@ class App extends Component {
         <div className="App-intro">
         <Grid>
           <Row className="show-grid">
-            <Col md={3} >
+            <Col sm={3} xs={1}>
                 <MainList lists={this.state.allLists} selectList={(list)=> this.selectList(list)} addList={()=> this.addList()}></MainList>
           </Col>
-          <Col md={8}>
+          <Col sm={8} smOffset={1} xs={8} xsOffset={3}>
           { this.state.selectedList && 
             <ListContainer 
               name={this.state.selectedList.name} 
