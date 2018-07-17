@@ -25,10 +25,9 @@ namespace ShoppingList.Api.Controllers
 
         // GET api/values
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public IEnumerable<Entities.ShoppingList> Get()
         {
-
-            return Ok(await db.ShoppingLists.ToListAsync());
+            return db.ShoppingLists;
         }
 
         // GET api/values/5
