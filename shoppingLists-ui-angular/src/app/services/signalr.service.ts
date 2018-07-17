@@ -25,8 +25,12 @@ export class SignalRService {
   private init() {
 
     this._hubConnection = new HubConnectionBuilder()
-    .withUrl("http://localhost:18111/hubs/shoppingLists")
+    .withUrl('http://localhost:18111/hubs/shoppingLists')
     .build();
+  this._hubConnection.on('ShoppingListItem_Added', (item: ShoppingListItem) => {
+        console.log('Item Added: ' + item.id);
+        this.shoppingListItemAdded.next(item);
+    });
 
     this._hubConnection.on('ShoppingListItem_Added', (item: ShoppingListItem) => {
         console.log("Item Added: " + item.id);
@@ -34,18 +38,18 @@ export class SignalRService {
     });
 
     this._hubConnection.on('ShoppingListItem_Updated', (item: ShoppingListItem) => {
-        console.log("Item Updated: " + item.id)
+        console.log('Item Updated: ' + item.id)
         this.shoppingListItemUpdated.next(item);
     });
 
     this._hubConnection.on('ShoppingList_Updated', (list: ShoppingList) => {
-        console.log("ShoppingListUpdated:" + list.id);
+        console.log('ShoppingListUpdated: ' + list.id);
         this.shoppingListUpdated.next(list);
      });
-    
+
      this._hubConnection.on('ShoppingLists_Refresh',() => {
-        console.log("Refreshing Lists");
-        
+        console.log('Refreshing Lists');
+
         this.shoppingListsRefresh.next();
      });
 
@@ -63,7 +67,7 @@ export class SignalRService {
   }
 
   connect(){
-    
+
     this._hubConnection.start()
     .then(() => {
         this.isConnected = true;
@@ -78,10 +82,10 @@ export class SignalRService {
 
   joinShoppingList(id: number){
 
-    this._hubConnection.invoke("JoinList", id);
+    this._hubConnection.invoke('JoinList', id);
   }
 
   leaveShoppingList(id: number){
-    this._hubConnection.invoke("LeaveList", id);
+    this._hubConnection.invoke('LeaveList', id);
   }
 }

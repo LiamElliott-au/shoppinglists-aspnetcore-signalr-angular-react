@@ -10,7 +10,7 @@ import {environment} from '../../environments/environment';
 })
 export class ShoppingListService {
 
-  private readonly url = environment.serverAddress + "/shoppingLists";
+  private readonly url = environment.serverAddress + '/shoppingLists';
   constructor(private http: HttpClient) { }
 
   getAll(){
