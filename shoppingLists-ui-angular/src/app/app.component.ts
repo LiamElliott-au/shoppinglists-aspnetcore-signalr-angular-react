@@ -14,17 +14,17 @@ export class AppComponent {
   title = 'app';
 
   lists$: Observable<ShoppingList>;
-  refresh$ = new Subject<any>();
+  refreshList$ = new Subject<any>();
 
   constructor(private service: ShoppingListService, private signalRService: SignalRService) {
 
   }
 
   ngOnInit(){
-    
+
     this.signalRService.connect();
-    
-    var refresh$ = this.signalRService.shoppingListsRefresh.pipe(
+
+     var refresh$ = merge(this.signalRService.shoppingListsRefresh, this.refreshList$).pipe(
       switchMap(_ => this.service.getAll())
     )
 

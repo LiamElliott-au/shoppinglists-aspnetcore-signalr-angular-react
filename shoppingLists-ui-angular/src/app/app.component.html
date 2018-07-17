@@ -13,7 +13,7 @@
   </mat-card-title>
   <mat-card-content>
 
-    <app-list-container [Lists]="lists$ | async" (InvalidateList)="refresh$.next()"></app-list-container>
+    <app-list-container [Lists]="lists$ | async" (InvalidateList)="refreshList$.next()"></app-list-container>
   </mat-card-content>
 </mat-card>
 <div fxFlex="fill">
