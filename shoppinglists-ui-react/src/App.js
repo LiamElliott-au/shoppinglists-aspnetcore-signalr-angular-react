@@ -59,29 +59,14 @@ class App extends Component {
     const list = this.state.selectedList;
     const itemToAdd = {name: item, purchased: false};
 
-    axios.post('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items', itemToAdd)
-    .then(function(response) {
-      list.items.push(response.data);
-      _this.setState({
-        selectedList: list
-      });
-    });
+    axios.post('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items', itemToAdd);
   }
   
   saveItem(item){
     const _this = this;
     const list = this.state.selectedList;
-    axios.put('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item)
-    .then(function(response){
-      const list =  _this.state.selectedList;      
-      const index = list.items.findIndex(i => i.id === item.id);
-      list.items.splice(index, 1, item);
-      _this.setState({
-        selectedList: list
-      });
-    });
-    
-  }
+    axios.put('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item);
+    }
 
   refreshLists(){
     const  _this = this;
@@ -100,31 +85,39 @@ class App extends Component {
     const _this = this;
 
     const hubConnection = new HubConnectionBuilder()
-    .withUrl("http://localhost:18111/hubs/shoppingLists")
+    .withUrl('http://localhost:18111/hubs/shoppingLists')
     .build();
 
     this.setState({hubConnection }, () => {
       this.state.hubConnection.start()
-      .then(() => console.log("Connected"))
-      .catch(e => console.log("Error connecting"));
+      .then(() => console.log('Connected'))
+      .catch(e => console.log('Error connecting'));
       
       this.state.hubConnection.on('ShoppingLists_Refresh', () => {
         _this.refreshLists();
       });
 
       this.state.hubConnection.on('ShoppingListItem_Added', (item) => {
-        _this.state.selectedListItems.push(item);
-        console.log("Item Added: " + item.name);
+        console.log('Item Added: ' + item.name);
+        const selectedListsItems = _this.state.selectedListItems;
+        selectedListsItems.push(item);
+        this.setState({selectedListItems: selectedListsItems });
       });
 
-      this.state.hubConnection.on('ShoppingListItem_Removed', () => {
-        console.log("Item Removed")
+      this.state.hubConnection.on('ShoppingListItem_Updated', (item) => {
+        console.log('Item Updated: ' + item.name);
+        const items =  _this.state.selectedListItems;      
+        const index = items.findIndex(i => i.id === item.id);
+        items.splice(index, 1, item);
+        this.setState({
+          selectedListItems: items
+          });
       });
 
-      this.state.hubConnection.on('ShoppingList_Updated', (list) => {
+      this.state.hubConnection.on('ShoppingList', (list) => {
         
-        console.log("Refresh List");
-        _this.setState(
+        console.log('Refresh List');
+        this.setState(
             {
               selectedList: list
             }
@@ -137,11 +130,15 @@ class App extends Component {
 
   componentWillUpdate(nextProps, nextState) {
     if (nextState.selectedList !== this.state.selectedList ) {
-        if (this.state.selectedList !== undefined && this.state.selectedList !== null)
+        if (this.state.selectedList !== undefined && this.state.selectedList !== null){
+          console.log('Unsubscribing from List: ' + this.state.selectedList.id );
           this.state.hubConnection.invoke('LeaveList', this.state.selectedList.id);
-      if (nextState.selectedList !== undefined && nextState.selectedList !== null) {
-        this.state.hubConnection.invoke('JoinList', nextState.selectedList.id);
-      }
+        }
+      
+        if (nextState.selectedList !== undefined && nextState.selectedList !== null) {
+          console.log('Subscribing from List: ' + nextState.selectedList.id );
+          this.state.hubConnection.invoke('JoinList', nextState.selectedList.id);
+        }
     }
   }
 
