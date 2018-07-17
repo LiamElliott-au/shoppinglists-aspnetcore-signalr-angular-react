@@ -31,27 +31,25 @@ class App extends Component {
     .then(function(response) {
       _this.setState(
         {
-          selectedList: response.data
+          selectedList: response.data,
+          selectedListItems: response.data.items
         }
       );
     });
   }
 
   saveListName(name){
-    const _this = this;
     const list = this.state.selectedList;
     list.name= name;
     if (list.id >= 0){
       axios.put('http://localhost:18111/api/shoppingLists/' + list.id, list)
       .then(function(response) {
-        _this.refreshLists();
         
       });
     }
     else{
       axios.post('http://localhost:18111/api/shoppingLists', list)
       .then(function(response) {
-        _this.refreshLists();
       });
     }    
   }
@@ -99,6 +97,8 @@ class App extends Component {
   
   componentDidMount(){
 
+    const _this = this;
+
     const hubConnection = new HubConnectionBuilder()
     .withUrl("http://localhost:18111/hubs/shoppingLists")
     .build();
@@ -109,12 +109,42 @@ class App extends Component {
       .catch(e => console.log("Error connecting"));
       
       this.state.hubConnection.on('ShoppingLists_Refresh', () => {
-        this.refreshLists();
+        _this.refreshLists();
       });
+
+      this.state.hubConnection.on('ShoppingListItem_Added', (item) => {
+        _this.state.selectedListItems.push(item);
+        console.log("Item Added: " + item.name);
+      });
+
+      this.state.hubConnection.on('ShoppingListItem_Removed', () => {
+        console.log("Item Removed")
+      });
+
+      this.state.hubConnection.on('ShoppingList_Updated', (list) => {
+        
+        console.log("Refresh List");
+        _this.setState(
+            {
+              selectedList: list
+            }
+          );
+        });
     });
   
     this.refreshLists();
   }
+
+  componentWillUpdate(nextProps, nextState) {
+    if (nextState.selectedList !== this.state.selectedList ) {
+        if (this.state.selectedList !== undefined && this.state.selectedList !== null)
+          this.state.hubConnection.invoke('LeaveList', this.state.selectedList.id);
+      if (nextState.selectedList !== undefined && nextState.selectedList !== null) {
+        this.state.hubConnection.invoke('JoinList', nextState.selectedList.id);
+      }
+    }
+  }
+
 
   render() {
     return (
@@ -133,7 +163,7 @@ class App extends Component {
           { this.state.selectedList && 
             <ListContainer 
               name={this.state.selectedList.name} 
-              items={this.state.selectedList.items}
+              items={this.state.selectedListItems}
               updateName={(name) => this.saveListName(name)} 
               addItem={(item) => this.addItem(item)}
               updateItem={(item) => this.saveItem(item)}></ListContainer>
