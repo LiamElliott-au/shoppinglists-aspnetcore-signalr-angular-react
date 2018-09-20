@@ -16,7 +16,10 @@ class App extends Component {
       allLists: [],
       selectedList: null,
       hubConnection: null,
-    }
+    };
+    
+    this.baseUrl = 'http://192.168.20.130:18111/';
+    this.apiBaseUrl = this.baseUrl + 'api/shoppingLists/';
   }
 
   addList(){
@@ -27,7 +30,7 @@ class App extends Component {
 
   selectList(list){
     const  _this = this;
-    axios.get('http://localhost:18111/api/shoppingLists/' + list.id)
+    axios.get(this.apiBaseUrl + list.id)
     .then(function(response) {
       _this.setState(
         {
@@ -42,13 +45,13 @@ class App extends Component {
     const list = this.state.selectedList;
     list.name= name;
     if (list.id >= 0){
-      axios.put('http://localhost:18111/api/shoppingLists/' + list.id, list)
+      axios.put(this.apiBaseUrl + list.id, list)
       .then(function(response) {
         
       });
     }
     else{
-      axios.post('http://localhost:18111/api/shoppingLists', list)
+      axios.post(this.apiBaseUrl, list)
       .then(function(response) {
       });
     }    
@@ -59,18 +62,18 @@ class App extends Component {
     const list = this.state.selectedList;
     const itemToAdd = {name: item, purchased: false};
 
-    axios.post('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items', itemToAdd);
+    axios.post(this.apiBaseUrl+ list.id+ '/Items', itemToAdd);
   }
   
   saveItem(item){
     const _this = this;
     const list = this.state.selectedList;
-    axios.put('http://localhost:18111/api/shoppingLists/'+ list.id+ '/Items/' + item.id, item);
+    axios.put(this.apiBaseUrl+ list.id+ '/Items/' + item.id, item);
     }
 
   refreshLists(){
     const  _this = this;
-      axios.get('http://localhost:18111/api/shoppingLists')
+      axios.get(this.apiBaseUrl)
           .then(function(response) {
             _this.setState(
               {
@@ -85,7 +88,7 @@ class App extends Component {
     const _this = this;
 
     const hubConnection = new HubConnectionBuilder()
-    .withUrl('http://localhost:18111/hubs/shoppingLists')
+    .withUrl(this.baseUrl + 'hubs/shoppingLists')
     .build();
 
     this.setState({hubConnection }, () => {
