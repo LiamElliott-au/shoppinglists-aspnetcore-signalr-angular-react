@@ -18,7 +18,7 @@ class App extends Component {
       hubConnection: null,
     };
     
-    this.baseUrl = 'http://192.168.20.130:18111/';
+    this.baseUrl = 'http://localhost:18111/';
     this.apiBaseUrl = this.baseUrl + 'api/shoppingLists/';
   }
 
